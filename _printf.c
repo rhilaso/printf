@@ -1,64 +1,48 @@
 #include "main.h"
 
 /**
- * print_buffer - prints out buffer contents
- * @buffer: Array
- * @buff_ind: lenght or index of next character
+ * _printf - this function prints anything
+ * @format: format string
+ * Return: bytes printed out
  */
-
-void print_buffer(char buffer[], int *buff_ind)
-{
-	if (*buff_ind > 0)
-		write(1, &buffer[0], *buff_ind);
-	*buff_ind = 0;
-}
-
-/**
- * _printf - a function that prints anything
- * @format: the format string
- * Return: printed bytes
- */
-
 int _printf(const char *format, ...)
 {
-	va_list cad;
 	int i = 0;
-	int printed = 0;
-	int disp_chars = 0;
-	char buffer[BUFF_SIZE];
+	va_list list;
+	char *p, *start;
+	params_t params = PARAMS_INIT;
 
-	if (format == NULL)
+	va_start(list, format);
+
+	if (!format || (format[0] == '%' && !format[1]))
 		return (-1);
-
-	va_start(cad, format);
-
-	for (i = 0; format && format[i] != '\0'; i++)
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = (char *)format; *p; p++)
 	{
-		if (format[i] != '%')
+		init_params(&params, list);
+		if (*p != '%')
 		{
-			buffer[buff_ind++] = format[i];
-			if (buff_ind == BUFF_SIZE)
-				print_buffer(buffer, &buff_ind);
-			disp_chars++;
+			i += _putchar(*p);
+			continue;
 		}
+		start = p;
+		p++;
+		while (get_flag(p, &params)) /* while char at p is flag char */
+		{
+			p++; /* next char */
+		}
+		p = get_width(p, &params, list);
+		p = get_precision(p, &params, list);
+		if (get_modifier(p, &params))
+			p++;
+		if (!get_specifier(p))
+			i += print_from_to(start, p,
+				params.l_modifier || params.h_modifier ? p - 1 : 0);
 		else
-		{
-			print_buffer(buffer, &buff_ind);
-			flags = get_flags(format, &i);
-			width = get_width(format, &i, cad);
-			precision = get_precision(format, &i, cad);
-			size = get_size(format, &i);
-			++i;
-			printed = handle print(format, &i, list, buffer,
-					flags, width, precision, size);
-			if (printed == -1)
-				return (-1);
-			disp_chars += printed;
-		}
+			i += get_print_func(p, ap, &params);
 	}
-	print_buffer(buffer, &buff_ind);
-	va_end(cad);
-	return (disp_chars);
+	_putchar(BUF_FLUSH);
+	va_end(list);
+	return (i);
 }
-
-
