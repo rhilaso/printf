@@ -1,42 +1,73 @@
-#ifndef MAIN_H
-#define MAIN_H
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef _PRINTF_H
+#define _PRINTF_H
+
+#include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <limits.h>
-#define UNUSED(x) (void)(x)
-#define BUFF_SIZE 1024
-/* FLAGS */
-#define F_MINUS 1
-#define F_PLUS 2
-#define F_ZERO 4
-#define F_HASH 8
-#define F_SPACE 16
+#include <stdlib.h>
 
-/* SIZES */
-#define S_LONG 2
-#define S_SHORT 1
+#define OUTPUT_BUF_SIZE 1024
+#define BUF_FLUSH -1
+
+#define FIELD_BUF_SIZE 50
+
+#define NULL_STRING "(null)"
+
+#define PARAMS_INIT {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+#define CONVERT_LOWERCASE	1
+#define CONVERT_UNSIGNED	2
 
 /**
- * struct fmt - Struct op
+ * struct parameters - parameters struct
  *
- * @fmt: representative of format.
- * @fn: represent the function associated.
+ * @unsign: flag if unsigned value
+ *
+ * @plus_flag: on if plus_flag specified
+ * @space_flag: on if hashtag_flag specified
+ * @hashtag_flag: on if _flag specified
+ * @zero_flag: on if _flag specified
+ * @minus_flag: on if _flag specified
+ *
+ * @width: field width specified
+ * @precision: field precision specified
+ *
+ * @h_modifier: on if h_modifier is specified
+ * @l_modifier: on if l_modifier is specified
+ *
  */
-struct fmt
+typedef struct parameters
 {
-	char fmt;
-	int (*fn)(va_list, char[], int, int, int, int);
-};
+	unsigned int unsign			: 1;
 
+	unsigned int plus_flag		: 1;
+	unsigned int space_flag		: 1;
+	unsigned int hashtag_flag	: 1;
+	unsigned int zero_flag		: 1;
+	unsigned int minus_flag		: 1;
+
+	unsigned int width;
+	unsigned int precision;
+
+	unsigned int h_modifier		: 1;
+	unsigned int l_modifier		: 1;
+} params_t;
 
 /**
- * typedef struct fmt fmt_t - Struct op
- * @fmt: representative of format.
- * @fm_t: represnt the function associated.
+ * struct specifier - Struct token
+ *
+ * @specifier: format token
+ * @f: The function associated
  */
-typedef struct fmt fmt_t;
+typedef struct specifier
+{
+	char *specifier;
+	int (*f)(va_list, params_t *);
+} specifier_t;
 
+
+/* _printf.c task */
 int _printf(const char *format, ...);
-int handle_print(const char *fmt, int *i,
-va_list list, char buffer[], int flags, int width, int precision, int size);
+
+#endif
